@@ -56,6 +56,7 @@ find_package(Matlab REQUIRED)
 if(MATLAB_FOUND)
     include_directories(${MATLAB_INCLUDE_DIRS})
     include_directories(${SIMULINK_INCLUDE_DIRS})
+    link_directories(${MATLAB_LIB_DIR})
 endif()
 
 add_definitions(-DMATLAB_MEX_FILE)
@@ -163,7 +164,7 @@ foreach(SOURCE ${SOURCES})
     	add_library(${TARGET_NAME} SHARED src/${PROJECT_NAME}/${SOURCE})
     	set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "" SUFFIX ".mexa64")
 	set_target_properties(${TARGET_NAME} PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${${PROJECT_NAME}_MEX_DESTINATION})
-    	target_link_libraries(${TARGET_NAME} ${catkin_LIBRARIES})
+    	target_link_libraries(${TARGET_NAME} ${catkin_LIBRARIES} ${MATLAB_LIBRARIES})
     	install(TARGETS ${TARGET_NAME}
 			ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 			LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

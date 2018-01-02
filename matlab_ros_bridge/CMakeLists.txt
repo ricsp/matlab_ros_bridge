@@ -55,6 +55,7 @@ find_package(Matlab REQUIRED)
 if(MATLAB_FOUND)
     include_directories(${MATLAB_INCLUDE_DIRS})
     include_directories(${SIMULINK_INCLUDE_DIRS})
+    link_directories(${MATLAB_LIB_DIR})
 endif()
 
 add_definitions(-DMATLAB_MEX_FILE)
@@ -158,7 +159,7 @@ add_library(rtblock
 set_target_properties(rtblock PROPERTIES PREFIX "" SUFFIX ".mexa64")
 set_target_properties(rtblock PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${${PROJECT_NAME}_MEX_DESTINATION})
 
-target_link_libraries(rtblock ${catkin_LIBRARIES})
+target_link_libraries(rtblock ${catkin_LIBRARIES} ${MATLAB_LIBRARIES})
 install(TARGETS rtblock
 	ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 	LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
@@ -200,12 +201,18 @@ string(REGEX REPLACE ";" "' '" MAKE_INFO_LINK_LIBS_OBJS "'${MAKE_INFO_LINK_LIBS_
 configure_file(${RTWMAKECFG_TEMPLATE_PATH} ${${PROJECT_NAME}_MEX_DESTINATION}/rtwmakecfg.m)
 
 execute_process(
-  COMMAND rospack plugins --attrib=mdl_path matlab_ros_bridge
-  OUTPUT_VARIABLE MSG_TYPES OUTPUT_STRIP_TRAILING_WHITESPACE)
+  COMMAND /opt/ros/kinetic/bin/rospack plugins --attrib=mdl_path matlab_ros_bridge
+OUTPUT_VARIABLE MSG_TYPES RESULT_VARIABLE ROSPACK_RESULT ERROR_VARIABLE ROSPACK_ERROR
+OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 if("${MSG_TYPES} " STREQUAL " ")
   if(FoundPosition EQUAL -1)
-    message(WARNING "We didn't find any plugin! You might need to run\n source ${CATKIN_DEVEL_PREFIX}/setup.bash\nbefore you can generate the library.")
+    message(WARNING "We didn't find any plugin!\n
+      rospack returned the following output:\n
+      ${ROSPACK_ERROR}\n
+      You might need to run\n
+      source ${CATKIN_DEVEL_PREFIX}/setup.bash\n
+      before you can generate the library.")
   else()
     string(LENGTH ${CATKIN_DEVEL_PREFIX} CATKIN_DEVEL_PREFIX_LENGTH)
     string(LENGTH ${PROJECT_NAME} PROJECT_NAME_LENGTH)

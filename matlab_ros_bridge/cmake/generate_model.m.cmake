@@ -37,15 +37,15 @@
 
 
 lib_name = 'ros_msgs';
-packages = {... 
+packages = {...
 @INSTALLED_MRB_PACKAGES@ ...
 };
 
-mdl_paths = {... 
+mdl_paths = {...
 @MDL_PATHS@ ...
 };
 
-src_paths = {... 
+src_paths = {...
 @SRC_PATHS@ ...
 };
 
@@ -60,6 +60,7 @@ disp('Creating main library file. This may take a while.');
 new_system(lib_name,'Library');
 
 fid = fopen( 'setup.m', 'wt' );
+fprintf(fid, 'addpath(fileparts(mfilename(''fullpath'')));\n');
 
 disp('Loading model...');
 load_system(fullfile(source_path, 'matlab_ros_bridge', 'models', 'subsystem'));
@@ -70,7 +71,7 @@ for j = 1:numel(packages)
     fprintf(fid, 'addpath(fullfile(''%s''));\n', fileparts(mdl_paths{j}));
     fprintf(fid, 'addpath(fullfile(''%s''));\n', src_paths{j});
     fprintf(fid, 'addpath(fullfile(''%s'', ''%s'', ''lib''));\n', sfun_path, packages{j});
-    
+
     [~, mdl] = fileparts(mdl_paths{j});
     load_system(mdl);
     add_block( 'subsystem/Subsystem', [lib_name '/' mdl], 'Position', [0 100*j 200 100*j+80] )
@@ -78,8 +79,11 @@ for j = 1:numel(packages)
     for k = 2:numel(list)
         add_block( list{k}, [lib_name '/' list{k}], 'Position', [0 100*(k-2) 200 100*(k-2)+80] );
     end
-        
+
 %     add_block( [packages{j} '/' packages{j}], [lib_name '/' packages{j}], 'Position', [0 100*j 200 100*j+80] )
 end
+
+set_param(lib_name,'EnableLBRepository','on');
+
 save_system(lib_name);
 close_system(lib_name);
